@@ -57,7 +57,7 @@ app.get("/api/count", async (req, res) => {
  * 获取小程序 openid & session_key
  * @return {*} code 小程序登陆 code
  */
-app.get('/getSession', async (req, res) => {
+app.get('/api/getSession', async (req, res) => {
   const { code } = req.query;
   // 获取code失败
   if (!code) return res.send({ code: 1001, data: null, mess: '未获取到 code' });
@@ -74,7 +74,7 @@ app.get('/getSession', async (req, res) => {
  * 授权登录
  * @param userInfo 用户信息 + openid
  */
-app.get('/login', async (req, res) => {
+app.get('/api/login', async (req, res) => {
   const userInfo = JSON.parse(req.query.userInfo) // 字符串转对象
   // 获取用户信息失败
   if (!userInfo) return res.send({ code: 1001, data: null, mess: '用户信息不能为空' });
@@ -87,7 +87,7 @@ app.get('/login', async (req, res) => {
 /**
  * 微信支付下单 获取小程序端支付所需参数
  */
-app.get('/v2Pay', async (req, res) => {
+app.get('/api/v2Pay', async (req, res) => {
   const openid = req.query.uid; // 用户的 openid
   const total_fee = Number(req.query.money) * 100; // 支付金额 单位为分
   const attach = '支付附加数据'; // 附加数据
@@ -109,7 +109,7 @@ app.get('/v2Pay', async (req, res) => {
  * 此接口中编写相关业务逻辑、如支付成功后写入数据库等操作
  * https://pay.weixin.qq.com/wiki/doc/api/wxa/wxa_api.php?chapter=9_7&index=8
  */
-app.post('/payCallback', async (req, res) => {
+app.post('/api/payCallback', async (req, res) => {
   console.log(req.body.xml);
   // json 转 xml
   const _json2Xml = json => {
