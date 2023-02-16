@@ -9,6 +9,6 @@ module.exports = {
     // 商户号信息
     mch: {
         mchId: '1638269736', // 商户 id
-        mchKey: 'xxxxxx' // 商户 key
+        mchKey: '5gH8m3zwOTlfnzIqV2wbHQjh3vZJNGZU' // 商户 key
     },
 }
