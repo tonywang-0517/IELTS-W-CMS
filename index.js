@@ -114,11 +114,11 @@ app.get('/api/essay/getEssay', async (req, res) => {
 
 app.post('/api/essay/addEssay', async (req, res) => {
     console.log(req.body);
-    console.log(JSON.parse(req.body));
     const title = req.body.title // 字符串转对象
     const body = req.body.body // 字符串转对象
     const uid = req.body.uid // 字符串转对象
     const eid = req.body.eid // 字符串转对象
+    console.debug({title, body, authorId: uid, eid})
 
     // 获取用户信息失败
     if (!uid) return res.send({code: 1001, data: null, mess: '用户信息不能为空'});
@@ -156,18 +156,58 @@ app.post('/api/essay/updateEssay', async (req, res) => {
     const eid = req.body.eid // 字符串转对象
     const title = req.body.title // 字符串转对象
     const body = req.body.body // 字符串转对象
+    const updated = req.body.updated
+
     // 获取用户信息失败
     if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
 
     try {
         // 查询当前用户是否已经注册
-        const essay = await Essay.update({title, body}, {where: {id: eid}});
+        const essay = await Essay.update({title, body,updated}, {where: {id: eid}});
 
         res.send(commonUtil.resSuccess(essay));
     } catch (e) {
         res.send(commonUtil.resSuccess(e));
     }
 
+});
+
+
+app.post('/api/imageToText', async (req, res) => {
+    const AK = "5A2WdH1r8qX6DKlc6gRjyCCV"
+    const SK = "IsqwLVTAEEqTt1Fb5AvvSgAjuN9auKRT"
+    function getAccessToken() {
+
+        let options = {
+            'method': 'POST',
+            'url': 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' + AK + '&client_secret=' + SK,
+        }
+        return new Promise((resolve, reject) => {
+            request(options, (error, response) => {
+                if (error) { reject(error) }
+                else { resolve(JSON.parse(response.body).access_token) }
+            })
+        })
+    }
+    var options = {
+        'method': 'POST',
+        'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
+        'headers': {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+        },
+        // image 可以通过 getFileContentAsBase64("C:\fakepath\WechatIMG341.jpeg") 方法获取,
+        form: {
+            'image': req.body.image
+        }
+    };
+
+    request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+        res.send(commonUtil.resSuccess(response.body));
+
+    });
 });
 
 
@@ -237,3 +277,23 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+
+
+
+
+
+/**
+ * 获取文件base64编码
+ * @param string  path 文件路径
+ * @return string base64编码信息，不带文件头
+ */
+function getFileContentAsBase64(path) {
+    const fs = require('fs');
+    try {
+        return fs.readFileSync(path, { encoding: 'base64' });
+    } catch (err) {
+        throw new Error(err);
+    }
+}
+
