@@ -12,12 +12,12 @@ const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
 import { ChatGPTAPI } from 'chatgpt'
 
-const { CHATGPTAPIKEY,APPID,APPSECRET } = process.env;
+const { CHATGPTAPIKEY,APPID,APPSECRET,chatGPTAPIKey } = process.env;
 
-console.log(123,CHATGPTAPIKEY);
-console.debug(123,CHATGPTAPIKEY);
+console.log(123,CHATGPTAPIKEY,chatGPTAPIKey);
+console.debug(123,CHATGPTAPIKEY,chatGPTAPIKey);
 const chatGPTAPI = new ChatGPTAPI({
-    apiKey: CHATGPTAPIKEY,
+    apiKey: CHATGPTAPIKEY||chatGPTAPIKey,
     debug:true
 })
 
