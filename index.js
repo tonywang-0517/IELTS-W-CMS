@@ -1,5 +1,7 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
+const dotenv = require("dotenv")
+dotenv.config();
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -10,14 +12,17 @@ const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
 import { ChatGPTAPI } from 'chatgpt'
 
+const { CHATGPTAPIKEY,APPID,APPSECRET } = process.env;
+
+console.log(CHATGPTAPIKEY);
 const chatGPTAPI = new ChatGPTAPI({
-    apiKey: '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',
+    apiKey: CHATGPTAPIKEY,
     debug:true
 })
 
 const wx = {
-    appid: 'wxfb1c7b400451534a',
-    secret: '07ecee655886a2ee666f6348a544c2a6'
+    appid: APPID,
+    secret: APPSECRET
 }
 
 const baseUrl = "https://express-k32d-30706-7-1316829210.sh.run.tcloudbase.com";
