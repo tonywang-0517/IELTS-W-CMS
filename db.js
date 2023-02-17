@@ -20,10 +20,44 @@ const Counter = sequelize.define("Counter", {
   },
 });
 
+const Essay = sequelize.define("Essay", {
+  id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  authorId: {
+    type: DataTypes.UUID,
+    allowNull: false
+  },
+  title: {
+    type: DataTypes.STRING,
+    defaultValue: '',
+  },
+  body: {
+    type: DataTypes.STRING,
+    defaultValue: '',
+  },
+  score: {
+    type: DataTypes.STRING,
+    defaultValue: '',
+  },
+  updatedAt: {
+    type: DataTypes.TIME,
+    defaultValue: new Date(),
+  },
+  createdAt: {
+    type: DataTypes.TIME,
+    defaultValue: new Date(),
+  }
+});
+
 const User = sequelize.define("User", {
   uid: {
     type: DataTypes.UUID,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   },
   credit: {
     type: DataTypes.INTEGER,
@@ -46,6 +80,7 @@ async function init() {
 // 导出初始化方法和模型
 module.exports = {
   init,
+  Essay,
   Counter,
   User
 };

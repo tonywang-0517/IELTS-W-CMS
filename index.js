@@ -2,7 +2,7 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const {init: initDB, Counter, User} = require("./db");
+const {init: initDB, Counter, User, Essay} = require("./db");
 const request = require('request');
 const commonUtil = require('./utils');
 const mpPayUtil = require('./utils/mpPayUtil');
@@ -91,10 +91,71 @@ app.get('/api/user/addCredit', async (req, res) => {
     if (!uid || !times) return res.send({code: 1001, data: null, mess: '用户信息不能为空'});
 
     // 查询当前用户是否已经注册
-    const user = await User.findOne({where:{uid:uid}});
+    const user = await User.findOne({where: {uid: uid}});
     await user.increment('credit', {by: times})
 
     res.send(commonUtil.resSuccess(user));
+});
+
+app.get('/api/essay/getEssay', async (req, res) => {
+    const uid = req.query.uid // 字符串转对象
+    // 获取用户信息失败
+    if (!uid) return res.send({code: 1001, data: null, mess: '用户信息不能为空'});
+
+    // 查询当前用户是否已经注册
+    const essays = await Essay.findAll({where: {authorId: uid}});
+
+    res.send(commonUtil.resSuccess(essays));
+});
+
+app.post('/api/essay/addEssay', async (req, res) => {
+    const title = req.body.title // 字符串转对象
+    const body = req.body.body // 字符串转对象
+    const uid = req.body.uid // 字符串转对象
+
+    // 获取用户信息失败
+    if (!uid) return res.send({code: 1001, data: null, mess: '用户信息不能为空'});
+
+    // 查询当前用户是否已经注册
+    const essay = await Essay.create({title, body, authorId: uid});
+
+    res.send(commonUtil.resSuccess(essay));
+});
+
+
+app.get('/api/essay/removeEssay', async (req, res) => {
+    const eid = req.query.eid // 字符串转对象
+
+    // 获取用户信息失败
+    if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
+
+    // 查询当前用户是否已经注册
+    const essay = await Essay.destroy({where: {id: eid}});
+
+    res.send(commonUtil.resSuccess(essay));
+});
+
+app.post('/api/essay/updateEssay', async (req, res) => {
+    const eid = req.body.eid // 字符串转对象
+    const title = req.body.title // 字符串转对象
+    const body = req.body.body // 字符串转对象
+    // 获取用户信息失败
+    if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
+
+    // 查询当前用户是否已经注册
+    const essay = await Essay.update({title, body}, {where: {id: eid}});
+
+    res.send(commonUtil.resSuccess(essay));
+});
+
+
+app.get('/api/essay/score', async (req, res) => {
+    const eid = req.body.eid // 字符串转对象
+    if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
+    const essay = await Essay.findOne({where: {id: eid}});
+    await essay.update({score:true}, {where: {id: eid}});
+
+    res.send(commonUtil.resSuccess(essay));
 });
 
 /**
