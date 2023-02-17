@@ -14,7 +14,8 @@ import { ChatGPTAPI } from 'chatgpt'
 
 const { CHATGPTAPIKEY,APPID,APPSECRET } = process.env;
 
-console.log(CHATGPTAPIKEY);
+console.log(123,CHATGPTAPIKEY);
+console.debug(123,CHATGPTAPIKEY);
 const chatGPTAPI = new ChatGPTAPI({
     apiKey: CHATGPTAPIKEY,
     debug:true
@@ -28,6 +29,7 @@ const wx = {
 const baseUrl = "https://express-k32d-30706-7-1316829210.sh.run.tcloudbase.com";
 
 const logger = morgan("tiny");
+
 
 const app = express();
 app.use(express.urlencoded({extended: false}));
