@@ -24,10 +24,9 @@ const Essay = sequelize.define("Essay", {
   eid: {
     type: DataTypes.STRING,
     allowNull: false,
-    primaryKey: true
   },
   authorId: {
-    type: DataTypes.UUID,
+    type: DataTypes.STRING,
     allowNull: false
   },
   title: {
