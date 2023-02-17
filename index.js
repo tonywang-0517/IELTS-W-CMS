@@ -91,9 +91,10 @@ app.get('/api/user/addCredit', async (req, res) => {
     if (!uid || !times) return res.send({code: 1001, data: null, mess: '用户信息不能为空'});
 
     // 查询当前用户是否已经注册
-    const userResult = await User.increment('credit', {by: times, where: {uid: uid}})
+    const user = await User.findOne({where:{uid:uid}});
+    await user.increment('credit', {by: times})
 
-    res.send(commonUtil.resSuccess(userResult));
+    res.send(commonUtil.resSuccess(user));
 });
 
 /**
