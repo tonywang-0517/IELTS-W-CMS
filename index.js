@@ -210,7 +210,7 @@ app.post('/api/imageToText', async (req, res) => {
 
 
 app.get('/api/essay/score', async (req, res) => {
-    const eid = req.body.eid // 字符串转对象
+    const eid = req.query.eid // 字符串转对象
     if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
     const essay = await Essay.findOne({where: {eid: eid}});
     await essay.update({score: true});
