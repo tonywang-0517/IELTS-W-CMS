@@ -113,6 +113,8 @@ app.get('/api/essay/getEssay', async (req, res) => {
 });
 
 app.post('/api/essay/addEssay', async (req, res) => {
+    console.log(req.body);
+    console.log(JSON.parse(req.body));
     const title = req.body.title // 字符串转对象
     const body = req.body.body // 字符串转对象
     const uid = req.body.uid // 字符串转对象
