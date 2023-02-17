@@ -113,12 +113,10 @@ app.get('/api/essay/getEssay', async (req, res) => {
 });
 
 app.post('/api/essay/addEssay', async (req, res) => {
-    console.log(req.body);
     const title = req.body.title // 字符串转对象
     const body = req.body.body // 字符串转对象
     const uid = req.body.uid // 字符串转对象
     const eid = req.body.eid // 字符串转对象
-    console.debug({title, body, authorId: uid, eid})
 
     // 获取用户信息失败
     if (!uid) return res.send({code: 1001, data: null, mess: '用户信息不能为空'});
@@ -163,7 +161,7 @@ app.post('/api/essay/updateEssay', async (req, res) => {
 
     try {
         // 查询当前用户是否已经注册
-        const essay = await Essay.update({title, body,updated}, {where: {id: eid}});
+        const essay = await Essay.update({title, body,updated}, {where: {eid: eid}});
 
         res.send(commonUtil.resSuccess(essay));
     } catch (e) {
