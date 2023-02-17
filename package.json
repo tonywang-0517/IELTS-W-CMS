@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "微信云托管 express 框架模版",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
@@ -10,6 +11,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "cors": "^2.8.5",
+    "esm": "^3.2.25",
     "express": "^4.16.4",
     "morgan": "^1.10.0",
     "mysql2": "^2.3.2",

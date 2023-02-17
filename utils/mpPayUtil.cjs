@@ -1,5 +1,5 @@
 const request = require('request');
-const { mp: mpConfig, mch: mchConfig } = require('../config');
+const { mp: mpConfig, mch: mchConfig } = require('../config/index.cjs');
 const crypto = require('crypto');
 const xml2js = require('xml2js'); // xml 解析模块
 
