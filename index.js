@@ -2,7 +2,7 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-//const { init: initDB, Counter,User } = require("./db");
+const { init: initDB, Counter,User } = require("./db");
 const request = require('request');
 const commonUtil = require('./utils');
 const mpPayUtil = require('./utils/mpPayUtil');
@@ -75,12 +75,12 @@ app.get('/api/getSession', async (req, res) => {
  * @param userInfo 用户信息 + openid
  */
 app.get('/api/login', async (req, res) => {
-  const userInfo = JSON.parse(req.query.userInfo) // 字符串转对象
+  const uid = req.query.uid // 字符串转对象
   // 获取用户信息失败
-  if (!userInfo) return res.send({ code: 1001, data: null, mess: '用户信息不能为空' });
+  if (!uid) return res.send({ code: 1001, data: null, mess: '用户信息不能为空' });
 
   // 查询当前用户是否已经注册
-  const userResult = await User.findOrCreate({ where: { uid: userInfo.uid }});
+  const userResult = await User.findOrCreate({ where: { uid: uid }});
   res.send(commonUtil.resSuccess(userResult));
 });
 
@@ -140,7 +140,7 @@ app.get("/api/wx_openid", async (req, res) => {
 const port = process.env.PORT || 80;
 
 async function bootstrap() {
-  //await initDB();
+  await initDB();
   app.listen(port, () => {
     console.log("启动成功", port);
   });

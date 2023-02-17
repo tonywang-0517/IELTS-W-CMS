@@ -25,25 +25,10 @@ const User = sequelize.define("User", {
     type: DataTypes.UUID,
     allowNull: false
   },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: '',
-  },
-  phoneNumber: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: '',
-  },
   credit: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 1,
-  },
-  vip: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false,
+    defaultValue: 3,
   },
   serviceNo: {
     type: DataTypes.INTEGER,
