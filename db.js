@@ -21,7 +21,7 @@ const Counter = sequelize.define("Counter", {
 });
 
 const Essay = sequelize.define("Essay", {
-  id: {
+  eid: {
     type: DataTypes.STRING,
     allowNull: false,
     primaryKey: true
