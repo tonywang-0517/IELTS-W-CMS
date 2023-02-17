@@ -6,6 +6,11 @@ const {init: initDB, Counter, User, Essay} = require("./db");
 const request = require('request');
 const commonUtil = require('./utils');
 const mpPayUtil = require('./utils/mpPayUtil');
+import { ChatGPTAPI } from 'chatgpt'
+
+const chatGPTAPI = new ChatGPTAPI({
+    apiKey: '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'
+})
 
 const wx = {
     appid: 'wxfb1c7b400451534a',
@@ -213,10 +218,21 @@ app.get('/api/essay/score', async (req, res) => {
     const eid = req.query.eid // 字符串转对象
     if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
     const essay = await Essay.findOne({where: {eid: eid}});
-    await essay.update({score: true});
+    await essay.update({score: '这里是output,这里是output'});
 
     res.send(commonUtil.resSuccess(essay));
 });
+
+app.get('/api/chat', async (req, res) => {
+    const message = req.query.message // 字符串转对象
+    if (!message) return res.send({code: 1001, data: null, mess: 'message不能为空'});
+    const asd = await chatGPTAPI.sendMessage(message)
+    console.log(asd.text)
+
+    res.send({text:asd.text});
+});
+
+
 
 /**
  * 微信支付下单 获取小程序端支付所需参数
