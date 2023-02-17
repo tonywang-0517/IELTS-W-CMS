@@ -23,7 +23,8 @@ const Counter = sequelize.define("Counter", {
 const Essay = sequelize.define("Essay", {
   id: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   },
   authorId: {
     type: DataTypes.UUID,
