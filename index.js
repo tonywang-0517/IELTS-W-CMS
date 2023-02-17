@@ -5,7 +5,6 @@ dotenv.config();
 const path = require("path");
 const express = require("express");
 const app = express();
-const expressWs = require('express-ws')(app);
 const cors = require("cors");
 const morgan = require("morgan");
 const {init: initDB, Counter, User, Essay} = require("./db.cjs");
@@ -27,10 +26,6 @@ const wx = {
 const baseUrl = "https://express-k32d-30706-7-1316829210.sh.run.tcloudbase.com";
 
 const logger = morgan("tiny");
-
-const clients = expressWs.getWss('/').clients
-app.ws('/', function (ws, req) { })
-
 
 
 
@@ -236,11 +231,7 @@ app.get('/api/essay/score', async (req, res) => {
     if(essay){
         const {text} = await chatGPTAPI.sendMessage(`请使用中文给下面雅思作文以雅思评分标准进行详尽打分：The graph presents data on the amount of carbon dioxide emissions, measured in metric tonnes, in the UK, Sweden, Portugal, and Italy, calculated on an individual basis from 1967 to 2007.Overall, the UK and Sweden experienced a downward trend although Portugal encountered a fluctuation at the start. In contrast, Italy and Portugal showed consistent growth throughout the whole given period.At the beginning of the year 1967, the emissions for carbon dioxide of the UK and Sweden were nearly 11 and 9 metric tonnes per person, respectively. Then the figure of UK declined steadily to about 9 metric tonnes after 4 decades. Although it's constantly keeping the highest position among the four countries. Conversely, Portugal spiked to more than 10 metric tonnes in the first decade. after that, it began falling continually into around 5 metric tonnes at the end, matching the index of Portugal.In contrast, Both Italy and Portugal's carbon dioxide emissions per person had a consistent increase, during the whole period, from around 4 and 1  to nearly 8 and 6 metric tonnes individually. it's also noteworthy that Italy's figure over traced Sweden around 1990.`,
             {promptPrefix:'', promptSuffix:''});
-        await essay.update({score: text});
-        for (let c of clients) {
-            console.log(JSON.stringify(c));
-            c.send(essay);
-        }
+        essay.update({score: text});
     }
 });
 
