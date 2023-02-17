@@ -111,8 +111,8 @@ app.get('/api/v2Pay', async (req, res) => {
  * https://pay.weixin.qq.com/wiki/doc/api/wxa/wxa_api.php?chapter=9_7&index=8
  */
 app.post('/api/payCallback', async (req, res) => {
-  console.log(res);
-  console.log(req.body);
+  console.log(JSON.stringify(req.body.xml));
+  console.log(JSON.stringify(req.body));
   // json 转 xml
   const _json2Xml = json => {
     let _xml = '';
