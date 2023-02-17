@@ -101,25 +101,35 @@ app.get('/api/essay/getEssay', async (req, res) => {
     const uid = req.query.uid // 字符串转对象
     // 获取用户信息失败
     if (!uid) return res.send({code: 1001, data: null, mess: '用户信息不能为空'});
+    try {
+        // 查询当前用户是否已经注册
+        const essays = await Essay.findAll({where: {authorId: uid}});
+        res.send(commonUtil.resSuccess(essays));
+    } catch (e) {
+        res.send(commonUtil.resSuccess(e));
+    }
 
-    // 查询当前用户是否已经注册
-    const essays = await Essay.findAll({where: {authorId: uid}});
 
-    res.send(commonUtil.resSuccess(essays));
 });
 
 app.post('/api/essay/addEssay', async (req, res) => {
     const title = req.body.title // 字符串转对象
     const body = req.body.body // 字符串转对象
     const uid = req.body.uid // 字符串转对象
+    const id = req.body.id // 字符串转对象
 
     // 获取用户信息失败
     if (!uid) return res.send({code: 1001, data: null, mess: '用户信息不能为空'});
 
     // 查询当前用户是否已经注册
-    const essay = await Essay.create({title, body, authorId: uid});
+    try {
+        const essay = await Essay.create({title, body, authorId: uid, id});
 
-    res.send(commonUtil.resSuccess(essay));
+        res.send(commonUtil.resSuccess(essay));
+    } catch (e) {
+        res.send(commonUtil.resSuccess(e));
+    }
+
 });
 
 
@@ -129,10 +139,15 @@ app.get('/api/essay/removeEssay', async (req, res) => {
     // 获取用户信息失败
     if (!id) return res.send({code: 1001, data: null, mess: 'id不能为空'});
 
-    // 查询当前用户是否已经注册
-    const essay = await Essay.destroy({where: {id: id}});
+    try {
+        // 查询当前用户是否已经注册
+        const essay = await Essay.destroy({where: {id: id}});
 
-    res.send(commonUtil.resSuccess(essay));
+        res.send(commonUtil.resSuccess(essay));
+    } catch (e) {
+        res.send(commonUtil.resSuccess(e));
+    }
+
 });
 
 app.post('/api/essay/updateEssay', async (req, res) => {
@@ -142,10 +157,15 @@ app.post('/api/essay/updateEssay', async (req, res) => {
     // 获取用户信息失败
     if (!id) return res.send({code: 1001, data: null, mess: 'id不能为空'});
 
-    // 查询当前用户是否已经注册
-    const essay = await Essay.update({title, body}, {where: {id: id}});
+    try {
+        // 查询当前用户是否已经注册
+        const essay = await Essay.update({title, body}, {where: {id: id}});
 
-    res.send(commonUtil.resSuccess(essay));
+        res.send(commonUtil.resSuccess(essay));
+    } catch (e) {
+        res.send(commonUtil.resSuccess(e));
+    }
+
 });
 
 
@@ -153,7 +173,7 @@ app.get('/api/essay/score', async (req, res) => {
     const id = req.body.id // 字符串转对象
     if (!id) return res.send({code: 1001, data: null, mess: 'id不能为空'});
     const essay = await Essay.findOne({where: {id: id}});
-    await essay.update({score:true}, {where: {id: id}});
+    await essay.update({score: true}, {where: {id: id}});
 
     res.send(commonUtil.resSuccess(essay));
 });
