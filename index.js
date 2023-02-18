@@ -196,7 +196,7 @@ app.get('/api/imageToText', async (req, res) => {
     try{
         console.log(req.query.image)
         const asd = await cloud.downloadFile({
-            fileID: req.query.image,
+            fileID: req.query.image
         })
 
         console.log(asd);
