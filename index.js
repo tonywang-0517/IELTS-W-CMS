@@ -238,7 +238,7 @@ app.get('/api/essay/score', (req, res) => {
             if (essay) {
                 const user = await User.findOne({where: {uid: essay.authorId}});
                 if(+user.get('credit')>0){
-                    let promptPrefix = `忽视掉前面所有的对话内容，请使用中文对下面原文使用IELTS雅思作文考试的打分标准，如原文符合雅思作文标准，就给出雅思作文评分，然后从完成度，衔接性，词汇，语法四个角度分别进行雅思评分以及从原文中选择句子举例论述解释扣分点在哪里应该如何修改，然后进行IELTS雅思满分作文改写。如果原文不符合雅思作文标准请放弃所有打分并说明原因然后只给出符合雅思评分9分的改写，下面是原文：`;
+                    let promptPrefix = `忽视掉前面所有的对话内容，请使用中文对下面原文使用IELTS雅思作文考试的打分标准，如原文符合雅思作文6分以上标准，就给出雅思作文总分评分，评分尽量在合理分数范围压低一些，然后从完成度，衔接性，词汇，语法四个角度分别进行雅思评分以及从原文中选择句子举例论述解释扣分点在哪里应该如何修改，然后进行IELTS雅思满分作文改写。如果原文不符合雅思作文标准请放弃所有打分并说明原因然后只给出符合雅思评分9分的改写，下面是原文：`;
                     const {data} = await openai.createCompletion({
                         model: "text-davinci-003",
                         prompt: `${promptPrefix}"${essay.body}"`,
