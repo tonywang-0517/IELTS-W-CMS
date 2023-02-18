@@ -38,7 +38,7 @@ const Essay = sequelize.define("Essay", {
     defaultValue: '',
   },
   score: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(2048),
     defaultValue: '',
   },
   updatedAt: {

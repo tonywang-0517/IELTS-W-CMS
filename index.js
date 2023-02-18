@@ -237,9 +237,8 @@ app.get('/api/essay/score', (req, res) => {
             const essay = await Essay.findOne({where: {eid: eid}});
             if (essay) {
                 const user = await User.findOne({where: {uid: essay.authorId}});
-                console.log('User',user,user.get('credit'),user.toJSON());
-                if(user.get('credit')>0){
-                    let promptPrefix = '请使用中文对这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分;|||打分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述)：xxx; |||修改建议(从原文中选择需要修改的句子举例说明)：xxx;|||满分作文改写（请根据原文改写出一篇雅思评分为满分的作文）：xxxx，下面是原文：';
+                if(+user.get('credit')>0){
+                    let promptPrefix = '请使用中文对这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分;|||打分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述)：xxx; |||修改建议(从原文中选择需要修改的句子举例说明)：xxx;|||满分作文改写（请根据原文改写出一篇雅思评分为满分的英语作文）：xxxx，下面是原文：';
                     const {data} = await openai.createCompletion({
                         model: "text-davinci-003",
                         prompt: promptPrefix+essay.body,
@@ -247,7 +246,7 @@ app.get('/api/essay/score', (req, res) => {
                         max_tokens:2048
                     });
                     console.log('更新了', data.choices[0].text);
-                    essay.update({score: data?.choices[0]?.text});
+                    await essay.update({score: data?.choices[0]?.text});
 
                     await user.decrement('credit', {by: 1})
                 }
