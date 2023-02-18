@@ -263,13 +263,14 @@ app.get('/api/chat', async (req, res) => {
     const type = req.query.type // 字符串转对象
     if (!message) return res.send({code: 1001, data: null, mess: 'message不能为空'});
     try {
+        let promptPrefix = '请使用中文对这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分（满分9分）：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分；得分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述，越详细越好)：xxx; 总体评价(越详细越好)：xxx; 修改建议(从原文中选择句子举例说明，越详细越好)：xxx; 错误(从原文中指出使用不当的句子并加以改正)：xxx;满分作文改写（请根据原文改写出一篇雅思评分为满分的作文）：xxxx}，下面是原文：';
+
         if(type){
              const completion = await chatGPTAPI.sendMessage(message,
                  {timeoutMs: 5 * 60 * 1000, promptPrefix: promptPrefix, promptSuffix: ''});
             res.send(completion.text);
         }else{
-            let promptPrefix = '请使用这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分（满分9分）：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分；得分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述，越详细越好)：xxx; 总体评价(越详细越好)：xxx; 修改建议(从原文中选择句子举例说明，越详细越好)：xxx; 错误(从原文中指出使用不当的句子并加以改正)：xxx;满分作文改写（请根据原文改写出一篇雅思评分为满分的作文）：xxxx}，下面是原文：';
-            const completion = await openai.createCompletion({
+             const completion = await openai.createCompletion({
                 model: "text-davinci-003",
                 prompt: promptPrefix+message,
                 temperature: 0.2,
