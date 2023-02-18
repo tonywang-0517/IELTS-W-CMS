@@ -246,6 +246,7 @@ app.get('/api/essay/score', (req, res) => {
                     });
                     await essay.update({score: data?.choices[0]?.text});
                     await user.decrement('credit', {by: 1})
+                    await user.increment('serviceNo', {by: 1})
                 }
 
             }
