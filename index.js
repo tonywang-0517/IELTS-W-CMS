@@ -195,34 +195,36 @@ app.get('/api/imageToText', async (req, res) => {
 
     try{
         console.log(req.query.image)
-        const {fileContent} = await cloud.downloadFile({
+        const asd = await cloud.downloadFile({
             fileID: req.query.image,
         })
 
-        console.log(fileContent);
-        console.log(fileContent.toString('base64'));
-
-        var options = {
-            'method': 'POST',
-            'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
-            'headers': {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json'
-            },
-            // image 可以通过 getFileContentAsBase64("C:\fakepath\WechatIMG341.jpeg") 方法获取,
-            form: {
-                'image': fileContent.toString('base64')
-            }
-        };
-
-        request(options, function (error, response) {
-            if (error) throw new Error(error);
-            console.log(response.body);
-            res.send(commonUtil.resSuccess(response.body));
-
-        });
+        console.log(asd);
+        console.log(asd.fileContent);
+        console.log(asd.fileContent.toString('base64'));
+        res.send(commonUtil.resSuccess(asd.fileContent.toString('base64')));
+        // var options = {
+        //     'method': 'POST',
+        //     'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
+        //     'headers': {
+        //         'Content-Type': 'application/x-www-form-urlencoded',
+        //         'Accept': 'application/json'
+        //     },
+        //     // image 可以通过 getFileContentAsBase64("C:\fakepath\WechatIMG341.jpeg") 方法获取,
+        //     form: {
+        //         'image': fileContent.toString('base64')
+        //     }
+        // };
+        //
+        // request(options, function (error, response) {
+        //     if (error) throw new Error(error);
+        //     console.log(response.body);
+        //     res.send(commonUtil.resSuccess(response.body));
+        //
+        // });
     }catch (e){
-        console.log(e);
+        console.log('error',e);
+        res.send(e);
     }
 
 });
