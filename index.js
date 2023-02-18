@@ -8,22 +8,24 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const morgan = require("morgan");
-const {init: initDB, Counter, User, Essay} = require("./db.cjs");
+//const {init: initDB, Counter, User, Essay} = require("./db.cjs");
 const request = require('request');
 const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
 import {ChatGPTAPI} from 'chatgpt'
-import { Configuration, OpenAIApi } from "openai";
 
 const {CHATGPTAPIKEY, APPID, SECRET} = process.env;
+
+const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
     apiKey: CHATGPTAPIKEY,
 });
 const openai = new OpenAIApi(configuration);
+
 const chatGPTAPI = new ChatGPTAPI({
     apiKey: CHATGPTAPIKEY,
     completionParams: {
-        model: 'text-roberta-004'
+        model: 'text-davinci-003'
     }
 })
 
@@ -258,18 +260,29 @@ app.get('/api/essay/score', (req, res) => {
 
 app.get('/api/chat', async (req, res) => {
     const message = req.query.message // 字符串转对象
+    const type = req.query.type // 字符串转对象
     if (!message) return res.send({code: 1001, data: null, mess: 'message不能为空'});
-    const res1 = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: message,
-    });
-    const res2 = await openai.createCompletion({
-        model: "text-roberta-004",
-        prompt: message,
-    });
-    const res3 = await chatGPTAPI.sendMessage(message,
-        {promptPrefix: '', promptSuffix: ''});
-    res.send({res1,res2,res3});
+    try {
+        if(type){
+             const completion = await chatGPTAPI.sendMessage(message,
+                 {timeoutMs: 5 * 60 * 1000, promptPrefix: promptPrefix, promptSuffix: ''});
+            res.send(completion.text);
+        }else{
+            let promptPrefix = '请使用这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分（满分9分）：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分；得分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述，越详细越好)：xxx; 总体评价(越详细越好)：xxx; 修改建议(从原文中选择句子举例说明，越详细越好)：xxx; 错误(从原文中指出使用不当的句子并加以改正)：xxx;满分作文改写（请根据原文改写出一篇雅思评分为满分的作文）：xxxx}，下面是原文：';
+            const completion = await openai.createCompletion({
+                model: "text-davinci-003",
+                prompt: promptPrefix+message,
+                temperature: 0.2,
+            });
+            res.send(completion.data);
+        }
+
+
+    }catch (error){
+        console.log(error.message);
+        res.send(error.message);
+    }
+
 
 
 });
@@ -326,10 +339,11 @@ const port = process.env.PORT || 80;
 
 
 async function bootstrap() {
-    await initDB();
-    app.listen(port, () => {
+    //await initDB();
+    var server = app.listen(port, () => {
         console.log("启动成功", port);
     });
+    server.setTimeout(60*1000);
 }
 
 bootstrap();
