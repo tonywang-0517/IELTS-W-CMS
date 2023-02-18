@@ -173,7 +173,6 @@ app.post('/api/essay/updateEssay', async (req, res) => {
 
     // 获取用户信息失败
     if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
-
     try {
         // 查询当前用户是否已经注册
         const essay = await Essay.update({title, body, updatedAt}, {where: {eid: eid}});
