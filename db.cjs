@@ -42,11 +42,11 @@ const Essay = sequelize.define("Essay", {
     defaultValue: '',
   },
   updatedAt: {
-    type: DataTypes.TIME,
+    type: DataTypes.DATE,
     defaultValue: new Date(),
   },
   createdAt: {
-    type: DataTypes.TIME,
+    type: DataTypes.DATE,
     defaultValue: new Date(),
   }
 });
