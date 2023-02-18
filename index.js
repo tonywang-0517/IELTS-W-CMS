@@ -243,24 +243,26 @@ app.get('/api/essay/score', (req, res) => {
 
 });
 
-app.get('/api/chat', async (req, res) => {
+app.get('/api/chat',  (req, res) => {
     const message = req.query.message // 字符串转对象
     if (!message) return res.send({code: 1001, data: null, mess: 'message不能为空'});
     try {
-        let asd;
-        if(message==='test'){
-            //const promp = 'I want you to act as an English translator, spelling corrector and improver. I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in English. I want you to replace my simplified A0-level words and sentences with more beautiful and elegant, upper level English words and sentences. Keep the meaning same, but make them more literary. I want you to only reply the correction, the improvements and nothing else, do not write explanations. My first sentence is ';
-            asd = await chatGPTAPI.sendMessage(`请使用中文给下面雅思作文以雅思评分标准进行详尽打分并给出修改建议：The graph presents data on the amount of carbon dioxide emissions, measured in metric tonnes, in the UK, Sweden, Portugal, and Italy, calculated on an individual basis from 1967 to 2007.Overall, the UK and Sweden experienced a downward trend although Portugal encountered a fluctuation at the start. In contrast, Italy and Portugal showed consistent growth throughout the whole given period.At the beginning of the year 1967, the emissions for carbon dioxide of the UK and Sweden were nearly 11 and 9 metric tonnes per person, respectively. Then the figure of UK declined steadily to about 9 metric tonnes after 4 decades. Although it's constantly keeping the highest position among the four countries. Conversely, Portugal spiked to more than 10 metric tonnes in the first decade. after that, it began falling continually into around 5 metric tonnes at the end, matching the index of Portugal.In contrast, Both Italy and Portugal's carbon dioxide emissions per person had a consistent increase, during the whole period, from around 4 and 1  to nearly 8 and 6 metric tonnes individually. it's also noteworthy that Italy's figure over traced Sweden around 1990.`,
-                {promptPrefix:'', promptSuffix:''});
-        }else{
-            asd = await chatGPTAPI.sendMessage(message,{
-                promptPrefix:'',
-                promptSuffix:'',
-                onProgress: (partialResponse) => console.log(partialResponse.text)
-            });
-        }
+        (async ()=>{
+            console.log('see');
+            try{
+                const essay = await Essay.findOne({where: {eid: eid}});
+                if(essay){
+                    const res = await chatGPTAPI.sendMessage(`请使用中文给下面雅思作文以雅思评分标准进行详尽打分：The graph presents data on the amount of carbon dioxide emissions, measured in metric tonnes, in the UK, Sweden, Portugal, and Italy, calculated on an individual basis from 1967 to 2007.Overall, the UK and Sweden experienced a downward trend although Portugal encountered a fluctuation at the start. In contrast, Italy and Portugal showed consistent growth throughout the whole given period.At the beginning of the year 1967, the emissions for carbon dioxide of the UK and Sweden were nearly 11 and 9 metric tonnes per person, respectively. Then the figure of UK declined steadily to about 9 metric tonnes after 4 decades. Although it's constantly keeping the highest position among the four countries. Conversely, Portugal spiked to more than 10 metric tonnes in the first decade. after that, it began falling continually into around 5 metric tonnes at the end, matching the index of Portugal.In contrast, Both Italy and Portugal's carbon dioxide emissions per person had a consistent increase, during the whole period, from around 4 and 1  to nearly 8 and 6 metric tonnes individually. it's also noteworthy that Italy's figure over traced Sweden around 1990.`,
+                        {promptPrefix:'', promptSuffix:''});
+                    console.log('更新了',res);
+                    essay.update({score: res?.text});
+                }
+            }catch(e){
+                console.log(e);
+            }
+        })();
 
-        res.send({text:asd.text});
+        res.send('hahahaha');
     }catch (e){
         console.log(e);
         res.send(e);
