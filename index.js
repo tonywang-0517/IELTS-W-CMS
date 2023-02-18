@@ -1,4 +1,5 @@
-import { createRequire } from "module";
+import {createRequire} from "module";
+
 const require = createRequire(import.meta.url);
 const dotenv = require("dotenv");
 dotenv.config();
@@ -11,11 +12,12 @@ const {init: initDB, Counter, User, Essay} = require("./db.cjs");
 const request = require('request');
 const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
-import { ChatGPTAPI } from 'chatgpt'
-const { CHATGPTAPIKEY,APPID,SECRET } = process.env;
+import {ChatGPTAPI} from 'chatgpt'
+
+const {CHATGPTAPIKEY, APPID, SECRET} = process.env;
 const chatGPTAPI = new ChatGPTAPI({
     apiKey: CHATGPTAPIKEY,
-    debug:true
+    debug: true
 })
 
 const wx = {
@@ -26,9 +28,6 @@ const wx = {
 const baseUrl = "https://express-k32d-30706-7-1316829210.sh.run.tcloudbase.com";
 
 const logger = morgan("tiny");
-
-
-
 
 
 app.use(express.urlencoded({extended: false}));
@@ -175,7 +174,7 @@ app.post('/api/essay/updateEssay', async (req, res) => {
 
     try {
         // 查询当前用户是否已经注册
-        const essay = await Essay.update({title, body,updated}, {where: {eid: eid}});
+        const essay = await Essay.update({title, body, updated}, {where: {eid: eid}});
 
         res.send(commonUtil.resSuccess(essay));
     } catch (e) {
@@ -188,6 +187,7 @@ app.post('/api/essay/updateEssay', async (req, res) => {
 app.post('/api/imageToText', async (req, res) => {
     const AK = "5A2WdH1r8qX6DKlc6gRjyCCV"
     const SK = "IsqwLVTAEEqTt1Fb5AvvSgAjuN9auKRT"
+
     function getAccessToken() {
 
         let options = {
@@ -196,11 +196,15 @@ app.post('/api/imageToText', async (req, res) => {
         }
         return new Promise((resolve, reject) => {
             request(options, (error, response) => {
-                if (error) { reject(error) }
-                else { resolve(JSON.parse(response.body).access_token) }
+                if (error) {
+                    reject(error)
+                } else {
+                    resolve(JSON.parse(response.body).access_token)
+                }
             })
         })
     }
+
     var options = {
         'method': 'POST',
         'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
@@ -226,16 +230,16 @@ app.post('/api/imageToText', async (req, res) => {
 app.get('/api/essay/score', (req, res) => {
     const eid = req.query.eid // 字符串转对象
     if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
-    (async ()=>{
-        try{
+    (async () => {
+        try {
             const essay = await Essay.findOne({where: {eid: eid}});
-            if(essay){
+            if (essay) {
                 const res = await chatGPTAPI.sendMessage(`请使用中文给下面雅思作文以雅思评分标准进行详尽打分：The graph presents data on the amount of carbon dioxide emissions, measured in metric tonnes, in the UK, Sweden, Portugal, and Italy, calculated on an individual basis from 1967 to 2007.Overall, the UK and Sweden experienced a downward trend although Portugal encountered a fluctuation at the start. In contrast, Italy and Portugal showed consistent growth throughout the whole given period.At the beginning of the year 1967, the emissions for carbon dioxide of the UK and Sweden were nearly 11 and 9 metric tonnes per person, respectively. Then the figure of UK declined steadily to about 9 metric tonnes after 4 decades. Although it's constantly keeping the highest position among the four countries. Conversely, Portugal spiked to more than 10 metric tonnes in the first decade. after that, it began falling continually into around 5 metric tonnes at the end, matching the index of Portugal.In contrast, Both Italy and Portugal's carbon dioxide emissions per person had a consistent increase, during the whole period, from around 4 and 1  to nearly 8 and 6 metric tonnes individually. it's also noteworthy that Italy's figure over traced Sweden around 1990.`,
-                    {promptPrefix:'', promptSuffix:''});
-                console.log('更新了',res);
+                    {promptPrefix: '', promptSuffix: ''});
+                console.log('更新了', res);
                 essay.update({score: res?.text});
             }
-        }catch(e){
+        } catch (e) {
             console.log(e);
         }
     })();
@@ -243,35 +247,12 @@ app.get('/api/essay/score', (req, res) => {
 
 });
 
-app.get('/api/chat',  (req, res) => {
+app.get('/api/chat', async (req, res) => {
     const message = req.query.message // 字符串转对象
     if (!message) return res.send({code: 1001, data: null, mess: 'message不能为空'});
-    try {
-        (async ()=>{
-            console.log('see');
-            try{
-                const essay = await Essay.findOne({where: {eid: eid}});
-                if(essay){
-                    const res = await chatGPTAPI.sendMessage(`请使用中文给下面雅思作文以雅思评分标准进行详尽打分：The graph presents data on the amount of carbon dioxide emissions, measured in metric tonnes, in the UK, Sweden, Portugal, and Italy, calculated on an individual basis from 1967 to 2007.Overall, the UK and Sweden experienced a downward trend although Portugal encountered a fluctuation at the start. In contrast, Italy and Portugal showed consistent growth throughout the whole given period.At the beginning of the year 1967, the emissions for carbon dioxide of the UK and Sweden were nearly 11 and 9 metric tonnes per person, respectively. Then the figure of UK declined steadily to about 9 metric tonnes after 4 decades. Although it's constantly keeping the highest position among the four countries. Conversely, Portugal spiked to more than 10 metric tonnes in the first decade. after that, it began falling continually into around 5 metric tonnes at the end, matching the index of Portugal.In contrast, Both Italy and Portugal's carbon dioxide emissions per person had a consistent increase, during the whole period, from around 4 and 1  to nearly 8 and 6 metric tonnes individually. it's also noteworthy that Italy's figure over traced Sweden around 1990.`,
-                        {promptPrefix:'', promptSuffix:''});
-                    console.log('更新了',res);
-                    essay.update({score: res?.text});
-                }
-            }catch(e){
-                console.log(e);
-            }
-        })();
-
-        res.send('hahahaha');
-    }catch (e){
-        console.log(e);
-        res.send(e);
-    }
-
-
-
+    const {text} = await chatGPTAPI.sendMessage(message, {promptPrefix: '', promptSuffix: ''});
+    res.send(text);
 });
-
 
 
 /**
@@ -322,9 +303,6 @@ app.get("/api/wx_openid", async (req, res) => {
 });
 
 const port = process.env.PORT || 80;
-
-
-
 
 
 async function bootstrap() {
