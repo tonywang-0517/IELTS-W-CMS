@@ -13,8 +13,13 @@ const request = require('request');
 const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
 import {ChatGPTAPI} from 'chatgpt'
+import { Configuration, OpenAIApi } from "openai";
 
 const {CHATGPTAPIKEY, APPID, SECRET} = process.env;
+const configuration = new Configuration({
+    apiKey: CHATGPTAPIKEY,
+});
+const openai = new OpenAIApi(configuration);
 const chatGPTAPI = new ChatGPTAPI({
     apiKey: CHATGPTAPIKEY,
     completionParams: {
@@ -254,9 +259,17 @@ app.get('/api/essay/score', (req, res) => {
 app.get('/api/chat', async (req, res) => {
     const message = req.query.message // 字符串转对象
     if (!message) return res.send({code: 1001, data: null, mess: 'message不能为空'});
-    const {text} = await chatGPTAPI.sendMessage(message,
+    const res1 = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: message,
+    });
+    const res2 = await openai.createCompletion({
+        model: "text-roberta-004",
+        prompt: message,
+    });
+    const res3 = await chatGPTAPI.sendMessage(message,
         {promptPrefix: '', promptSuffix: ''});
-    res.send(text);
+    res.send({res1,res2,res3});
 
 
 });
