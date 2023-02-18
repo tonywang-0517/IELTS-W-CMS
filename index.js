@@ -8,11 +8,10 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const morgan = require("morgan");
-//const {init: initDB, Counter, User, Essay} = require("./db.cjs");
+const {init: initDB, Counter, User, Essay} = require("./db.cjs");
 const request = require('request');
 const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
-import {ChatGPTAPI} from 'chatgpt'
 
 const {CHATGPTAPIKEY, APPID, SECRET} = process.env;
 
@@ -22,12 +21,6 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const chatGPTAPI = new ChatGPTAPI({
-    apiKey: CHATGPTAPIKEY,
-    completionParams: {
-        model: 'text-davinci-003'
-    }
-})
 
 const wx = {
     appid: APPID,
@@ -243,12 +236,22 @@ app.get('/api/essay/score', (req, res) => {
         try {
             const essay = await Essay.findOne({where: {eid: eid}});
             if (essay) {
-                const res = await chatGPTAPI.sendMessage(`请使用中文给下面雅思作文以雅思评分标准进行详尽打分：The graph presents data on the amount of carbon dioxide emissions, measured in metric tonnes, in the UK, Sweden, Portugal, and Italy, calculated on an individual basis from 1967 to 2007.Overall, the UK and Sweden experienced a downward trend although Portugal encountered a fluctuation at the start. In contrast, Italy and Portugal showed consistent growth throughout the whole given period.At the beginning of the year 1967, the emissions for carbon dioxide of the UK and Sweden were nearly 11 and 9 metric tonnes per person, respectively. Then the figure of UK declined steadily to about 9 metric tonnes after 4 decades. Although it's constantly keeping the highest position among the four countries. Conversely, Portugal spiked to more than 10 metric tonnes in the first decade. after that, it began falling continually into around 5 metric tonnes at the end, matching the index of Portugal.In contrast, Both Italy and Portugal's carbon dioxide emissions per person had a consistent increase, during the whole period, from around 4 and 1  to nearly 8 and 6 metric tonnes individually. it's also noteworthy that Italy's figure over traced Sweden around 1990.`,
-                    {promptPrefix: '', promptSuffix: ''});
-                console.log('更新了', res);
-                essay.update({score: res?.text});
                 const user = await User.findOne({where: {uid: essay.authorId}});
-                await user.decrement('credit', {by: 1})
+                console.log('User',user,user.get('credit'),user.toJSON());
+                if(user.get('credit')>0){
+                    let promptPrefix = '请使用中文对这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分;|||打分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述)：xxx; |||修改建议(从原文中选择需要修改的句子举例说明)：xxx;|||满分作文改写（请根据原文改写出一篇雅思评分为满分的作文）：xxxx，下面是原文：';
+                    const {data} = await openai.createCompletion({
+                        model: "text-davinci-003",
+                        prompt: promptPrefix+essay.body,
+                        temperature: 0.8,
+                        max_tokens:2048
+                    });
+                    console.log('更新了', data.choices[0].text);
+                    essay.update({score: data?.choices[0]?.text});
+
+                    await user.decrement('credit', {by: 1})
+                }
+
             }
         } catch (e) {
             console.log(e);
@@ -263,25 +266,20 @@ app.get('/api/chat', async (req, res) => {
     const type = req.query.type // 字符串转对象
     if (!message) return res.send({code: 1001, data: null, mess: 'message不能为空'});
     try {
-        let promptPrefix = '请使用中文对这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分（满分9分）：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分；得分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述，越详细越好)：xxx; 总体评价(越详细越好)：xxx; 修改建议(从原文中选择句子举例说明，越详细越好)：xxx; 错误(从原文中指出使用不当的句子并加以改正)：xxx;满分作文改写（请根据原文改写出一篇雅思评分为满分的作文）：xxxx}，下面是原文：';
+        let promptPrefix = '请使用中文对这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分;|||打分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述)：xxx; |||修改建议(从原文中选择需要修改的句子举例说明)：xxx;|||满分作文改写（请根据原文改写出一篇雅思评分为满分的作文）：xxxx，下面是原文：';
+        const completion = await openai.createCompletion({
+            model: "text-davinci-003",
+            prompt: promptPrefix+message,
+            temperature: 0.8,
+            max_tokens:2048
+        });
+        res.send(completion.data);
 
-        if(type){
-             const completion = await chatGPTAPI.sendMessage(message,
-                 {timeoutMs: 5 * 60 * 1000, promptPrefix: promptPrefix, promptSuffix: ''});
-            res.send(completion.text);
-        }else{
-             const completion = await openai.createCompletion({
-                model: "text-davinci-003",
-                prompt: promptPrefix+message,
-                temperature: 0.2,
-            });
-            res.send(completion.data);
-        }
 
 
     }catch (error){
         console.log(error.message);
-        res.send(error.message);
+        res.send(error);
     }
 
 
@@ -340,7 +338,7 @@ const port = process.env.PORT || 80;
 
 
 async function bootstrap() {
-    //await initDB();
+    await initDB();
     var server = app.listen(port, () => {
         console.log("启动成功", port);
     });
