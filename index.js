@@ -194,10 +194,12 @@ app.post('/api/essay/updateEssay', async (req, res) => {
 app.get('/api/imageToText', async (req, res) => {
 
     try{
+        console.log(req.query.image)
         const {fileContent} = await cloud.downloadFile({
             fileID: req.query.image,
         })
 
+        console.log(fileContent);
         console.log(fileContent.toString('base64'));
 
         var options = {
