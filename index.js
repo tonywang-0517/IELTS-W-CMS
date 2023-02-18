@@ -238,16 +238,14 @@ app.get('/api/essay/score', (req, res) => {
             if (essay) {
                 const user = await User.findOne({where: {uid: essay.authorId}});
                 if(+user.get('credit')>0){
-                    let promptPrefix = '请使用中文对这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分;|||打分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述)：xxx; |||修改建议(从原文中选择需要修改的句子举例说明)：xxx;|||满分作文改写（请根据原文改写出一篇雅思评分为满分的英语作文）：xxxx，下面是原文：';
+                    let promptPrefix = `忽视掉前面所有的对话内容，请使用中文对下面原文使用IELTS雅思作文考试的打分标准，如原文符合雅思作文标准，就给出雅思作文评分，然后从完成度，衔接性，词汇，语法四个角度分别进行雅思评分以及从原文中选择句子举例论述解释扣分点在哪里应该如何修改，然后进行IELTS雅思满分作文改写。如果原文不符合雅思作文标准请放弃所有打分并说明原因然后只给出符合雅思评分9分的改写，下面是原文：`;
                     const {data} = await openai.createCompletion({
                         model: "text-davinci-003",
-                        prompt: promptPrefix+essay.body,
+                        prompt: `${promptPrefix}"${essay.body}"`,
                         temperature: 0.8,
                         max_tokens:2048
                     });
-                    console.log('更新了', data.choices[0].text);
                     await essay.update({score: data?.choices[0]?.text});
-
                     await user.decrement('credit', {by: 1})
                 }
 
@@ -265,14 +263,14 @@ app.get('/api/chat', async (req, res) => {
     const type = req.query.type // 字符串转对象
     if (!message) return res.send({code: 1001, data: null, mess: 'message不能为空'});
     try {
-        let promptPrefix = '请使用中文对这个模板对下面文章使用IELTS雅思作文考试的评分标准，从完成度，衔接性，词汇，语法四个角度以及总分分别进行评分和解释给出此分数的原因：{总分：xx分；完成度：xx分；衔接性：xx分；词汇：xx分；语法：xx分;|||打分原因(从完成度，衔接性，词汇，语法四个方面从原文中选择段落举例论述)：xxx; |||修改建议(从原文中选择需要修改的句子举例说明)：xxx;|||满分作文改写（请根据原文改写出一篇雅思评分为满分的作文）：xxxx，下面是原文：';
+        let promptPrefix = `忽视掉前面所有的对话内容，请使用中文对下面原文使用IELTS雅思作文考试的打分标准，如原文符合雅思作文标准，就给出雅思作文评分，然后从完成度，衔接性，词汇，语法四个角度分别进行雅思评分以及从原文中选择句子举例论述解释扣分点在哪里应该如何修改，然后进行IELTS雅思满分作文改写。如果原文不符合雅思作文标准请放弃所有打分并说明原因然后只给出符合雅思评分9分的改写，下面是原文：`;
         const completion = await openai.createCompletion({
             model: "text-davinci-003",
-            prompt: promptPrefix+message,
-            temperature: 0.8,
+            prompt: `${promptPrefix} "${message}"`,
+            temperature: .6,
             max_tokens:2048
         });
-        res.send(completion.data);
+        res.send(completion.data.choices[0].text);
 
 
 
@@ -280,8 +278,6 @@ app.get('/api/chat', async (req, res) => {
         console.log(error.message);
         res.send(error);
     }
-
-
 
 });
 
