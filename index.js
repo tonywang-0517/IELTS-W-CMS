@@ -8,12 +8,18 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const morgan = require("morgan");
-const {init: initDB, Counter, User, Essay} = require("./db.cjs");
+//const {init: initDB, Counter, User, Essay} = require("./db.cjs");
 const request = require('request');
 const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
+const cloud = require('wx-server-sdk')
 
-const {CHATGPTAPIKEY, APPID, SECRET} = process.env;
+cloud.init({
+    env: 'prod-2gwep4d1322e4884',
+})
+
+
+const {CHATGPTAPIKEY, APPID, SECRET,AK,SK} = process.env;
 
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
@@ -185,46 +191,38 @@ app.post('/api/essay/updateEssay', async (req, res) => {
 });
 
 
-app.post('/api/imageToText', async (req, res) => {
-    const AK = "5A2WdH1r8qX6DKlc6gRjyCCV"
-    const SK = "IsqwLVTAEEqTt1Fb5AvvSgAjuN9auKRT"
+app.get('/api/imageToText', async (req, res) => {
 
-    function getAccessToken() {
-
-        let options = {
-            'method': 'POST',
-            'url': 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' + AK + '&client_secret=' + SK,
-        }
-        return new Promise((resolve, reject) => {
-            request(options, (error, response) => {
-                if (error) {
-                    reject(error)
-                } else {
-                    resolve(JSON.parse(response.body).access_token)
-                }
-            })
+    try{
+        const {fileContent} = await cloud.downloadFile({
+            fileID: req.query.image,
         })
+
+        console.log(fileContent.toString('base64'));
+
+        var options = {
+            'method': 'POST',
+            'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
+            'headers': {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
+            },
+            // image 可以通过 getFileContentAsBase64("C:\fakepath\WechatIMG341.jpeg") 方法获取,
+            form: {
+                'image': fileContent.toString('base64')
+            }
+        };
+
+        request(options, function (error, response) {
+            if (error) throw new Error(error);
+            console.log(response.body);
+            res.send(commonUtil.resSuccess(response.body));
+
+        });
+    }catch (e){
+        console.log(e);
     }
 
-    var options = {
-        'method': 'POST',
-        'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
-        'headers': {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json'
-        },
-        // image 可以通过 getFileContentAsBase64("C:\fakepath\WechatIMG341.jpeg") 方法获取,
-        form: {
-            'image': req.body.image
-        }
-    };
-
-    request(options, function (error, response) {
-        if (error) throw new Error(error);
-        console.log(response.body);
-        res.send(commonUtil.resSuccess(response.body));
-
-    });
 });
 
 
@@ -332,8 +330,25 @@ app.get("/api/wx_openid", async (req, res) => {
 const port = process.env.PORT || 80;
 
 
+function getAccessToken() {
+
+    let options = {
+        'method': 'POST',
+        'url': 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' + AK + '&client_secret=' + SK,
+    }
+    return new Promise((resolve, reject) => {
+        request(options, (error, response) => {
+            if (error) {
+                reject(error)
+            } else {
+                resolve(JSON.parse(response.body).access_token)
+            }
+        })
+    })
+}
+
 async function bootstrap() {
-    await initDB();
+    //await initDB();
     var server = app.listen(port, () => {
         console.log("启动成功", port);
     });
