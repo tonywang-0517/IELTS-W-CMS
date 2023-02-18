@@ -169,14 +169,14 @@ app.post('/api/essay/updateEssay', async (req, res) => {
     const eid = req.body.eid // 字符串转对象
     const title = req.body.title // 字符串转对象
     const body = req.body.body // 字符串转对象
-    const updated = req.body.updated
+    const updatedAt = req.body.updatedAt
 
     // 获取用户信息失败
     if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
 
     try {
         // 查询当前用户是否已经注册
-        const essay = await Essay.update({title, body, updated}, {where: {eid: eid}});
+        const essay = await Essay.update({title, body, updatedAt}, {where: {eid: eid}});
 
         res.send(commonUtil.resSuccess(essay));
     } catch (e) {
