@@ -18,7 +18,7 @@ const {CHATGPTAPIKEY, APPID, SECRET} = process.env;
 const chatGPTAPI = new ChatGPTAPI({
     apiKey: CHATGPTAPIKEY,
     completionParams: {
-        model: 'text-davinci-003'
+        model: 'text-roberta-004'
     }
 })
 
@@ -240,6 +240,8 @@ app.get('/api/essay/score', (req, res) => {
                     {promptPrefix: '', promptSuffix: ''});
                 console.log('更新了', res);
                 essay.update({score: res?.text});
+                const user = await User.findOne({where: {uid: essay.authorId}});
+                await user.decrement('credit', {by: 1})
             }
         } catch (e) {
             console.log(e);
