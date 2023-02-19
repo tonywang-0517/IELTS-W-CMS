@@ -252,6 +252,38 @@ app.get('/api/essay/score', (req, res) => {
 
 });
 
+app.get('/api/essay/create', (req, res) => {
+    const eid = req.query.eid // 字符串转对象
+    if (!eid) return res.send({code: 1001, data: null, mess: 'eid不能为空'});
+    (async () => {
+        try {
+            const essay = await Essay.findOne({where: {eid: eid}});
+            if (essay) {
+                const user = await User.findOne({where: {uid: essay.authorId}});
+                if(+user.get('credit')>0){
+                    let promptPrefix = `请按照以下需求生成一篇优质的作文：`;
+                    const {data} = await openai.createCompletion({
+                        model: "text-davinci-003",
+                        prompt: `${promptPrefix}"${essay.body}"`,
+                        temperature: 1,
+                        max_tokens:2048
+                    });
+                    await essay.update({score: data?.choices[0]?.text});
+                    await user.decrement('credit', {by: 1})
+                    await user.increment('serviceNo', {by: 1})
+                }
+
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    })();
+    res.send(true);
+
+});
+
+
+
 app.get('/api/chat', async (req, res) => {
     const message = req.query.message // 字符串转对象
     const type = req.query.type // 字符串转对象
