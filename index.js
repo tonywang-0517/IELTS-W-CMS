@@ -1,7 +1,6 @@
 import {createRequire} from "module";
-
-var fs = require("fs");
 const require = createRequire(import.meta.url);
+const http = require("https");
 const dotenv = require("dotenv");
 dotenv.config();
 const path = require("path");
@@ -9,7 +8,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const morgan = require("morgan");
-//const {init: initDB, Counter, User, Essay} = require("./db.cjs");
+const {init: initDB, Counter, User, Essay} = require("./db.cjs");
 const request = require('request');
 const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
@@ -194,33 +193,30 @@ app.get('/api/imageToText', async (req, res) => {
 
     try{
         console.log(req.query.image);
-        var imageData = fs.readFileSync(req.query.image);
 
-        var imageBase64 = imageData.toString("base64");
+        let {base64Img} = await imgUrlToBase64(req.query.image);
 
-        res.send(commonUtil.resSuccess(imageBase64));
-        // var options = {
-        //     'method': 'POST',
-        //     'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
-        //     'headers': {
-        //         'Content-Type': 'application/x-www-form-urlencoded',
-        //         'Accept': 'application/json'
-        //     },
-        //     // image 可以通过 getFileContentAsBase64("C:\fakepath\WechatIMG341.jpeg") 方法获取,
-        //     form: {
-        //         'image': fileContent.toString('base64')
-        //     }
-        // };
-        //
-        // request(options, function (error, response) {
-        //     if (error) throw new Error(error);
-        //     console.log(response.body);
-        //     res.send(commonUtil.resSuccess(response.body));
-        //
-        // });
+        var options = {
+            'method': 'POST',
+            'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
+            'headers': {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
+            },
+            // image 可以通过 getFileContentAsBase64("C:\fakepath\WechatIMG341.jpeg") 方法获取,
+            form: {
+                'image': base64Img
+            }
+        };
+
+        request(options, function (error, response) {
+            if (error) throw new Error(error);
+            res.send(commonUtil.resSuccess(response.body));
+
+        });
     }catch (e){
         console.log('error',e);
-        res.send({e,asd:req.query.image});
+        res.send(e);
     }
 
 });
@@ -330,6 +326,29 @@ app.get("/api/wx_openid", async (req, res) => {
 const port = process.env.PORT || 80;
 
 
+async function imgUrlToBase64(url) {
+    let base64Img
+    return new Promise(function (resolve, reject) {
+        let req = http.get(url, function (res) {
+            var chunks = [];
+            var size = 0;
+            res.on('data', function (chunk) {
+                chunks.push(chunk);
+                size += chunk.length;　　//累加缓冲数据的长度
+            });
+            res.on('end', function (err) {
+                var data = Buffer.concat(chunks, size);
+                base64Img = data.toString('base64');
+                resolve({ success: true, base64Img });
+            });
+        })
+        req.on('error', (e) => {
+            resolve({ success: false, errmsg: e.message });
+        });
+        req.end();
+    })
+}
+
 function getAccessToken() {
 
     let options = {
@@ -348,7 +367,7 @@ function getAccessToken() {
 }
 
 async function bootstrap() {
-    //await initDB();
+    await initDB();
     var server = app.listen(port, () => {
         console.log("启动成功", port);
     });
