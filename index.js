@@ -196,7 +196,7 @@ app.get('/api/imageToText', async (req, res) => {
     try{
         console.log(req.query.image)
         const asd = await cloud.downloadFile({
-            fileID: req.query.image
+            fileID: 'cloud://prod-2gwep4d1322e4884.7072-prod-2gwep4d1322e4884-1316829210/essays/fff.png'
         })
 
         console.log(asd);
@@ -224,7 +224,7 @@ app.get('/api/imageToText', async (req, res) => {
         // });
     }catch (e){
         console.log('error',e);
-        res.send(e);
+        res.send({e,asd:req.query.image});
     }
 
 });
