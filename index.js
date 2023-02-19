@@ -17,7 +17,7 @@ const mpPayUtil = require('./utils/mpPayUtil.cjs');
 
 
 
-const {CHATGPTAPIKEY, APPID, SECRET,AK,SK} = process.env;
+const {CHATGPTAPIKEY, APPID, SECRET,AK,SK,BASEURL,BASEIP} = process.env;
 
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
@@ -31,7 +31,6 @@ const wx = {
     secret: SECRET
 }
 
-const baseUrl = "https://express-k32d-30706-7-1316829210.sh.run.tcloudbase.com";
 
 const logger = morgan("tiny");
 
@@ -316,8 +315,8 @@ app.get('/api/v2Pay', async (req, res) => {
     const total_fee = Number(req.query.money) * 100; // 支付金额 单位为分
     const attach = '支付附加数据'; // 附加数据
     const body = '小程序支付';  // 主体内容
-    const notify_url = `${baseUrl}/api/payCallback`; // 异步接收微信支付结果通知的回调地址，通知 url必须为外网可访问的url，不能携带参数。公网域名必须为 https
-    const spbill_create_ip = '124.223.121.60'; // 终端ip (可填本地路由 ip)
+    const notify_url = `${BASEIP}/api/payCallback`; // 异步接收微信支付结果通知的回调地址，通知 url必须为外网可访问的url，不能携带参数。公网域名必须为 https
+    const spbill_create_ip = BASEIP; // 终端ip (可填本地路由 ip)
 
 
     const param = {openid, attach, body, total_fee, notify_url, spbill_create_ip};
