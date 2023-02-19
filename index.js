@@ -198,7 +198,6 @@ app.get('/api/imageToText', async (req, res) => {
         const asd = await cloud.downloadFile({
             fileID: 'cloud://prod-2gwep4d1322e4884.7072-prod-2gwep4d1322e4884-1316829210/essays/fff.png'
         })
-
         console.log(asd);
         console.log(asd.fileContent);
         console.log(asd.fileContent.toString('base64'));
