@@ -1,5 +1,6 @@
 import {createRequire} from "module";
 
+var fs = require("fs");
 const require = createRequire(import.meta.url);
 const dotenv = require("dotenv");
 dotenv.config();
@@ -12,11 +13,9 @@ const morgan = require("morgan");
 const request = require('request');
 const commonUtil = require('./utils/index.cjs');
 const mpPayUtil = require('./utils/mpPayUtil.cjs');
-const cloud = require('wx-server-sdk')
 
-cloud.init({
-    env: 'prod-2gwep4d1322e4884',
-})
+
+
 
 
 const {CHATGPTAPIKEY, APPID, SECRET,AK,SK} = process.env;
@@ -194,14 +193,12 @@ app.post('/api/essay/updateEssay', async (req, res) => {
 app.get('/api/imageToText', async (req, res) => {
 
     try{
-        console.log(req.query.image)
-        const asd = await cloud.downloadFile({
-            fileID: 'cloud://prod-2gwep4d1322e4884.7072-prod-2gwep4d1322e4884-1316829210/essays/fff.png'
-        })
-        console.log(asd);
-        console.log(asd.fileContent);
-        console.log(asd.fileContent.toString('base64'));
-        res.send(commonUtil.resSuccess(asd.fileContent.toString('base64')));
+        console.log(req.query.image);
+        var imageData = fs.readFileSync(req.query.image);
+
+        var imageBase64 = imageData.toString("base64");
+
+        res.send(commonUtil.resSuccess(imageBase64));
         // var options = {
         //     'method': 'POST',
         //     'url': 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=' + await getAccessToken(),
