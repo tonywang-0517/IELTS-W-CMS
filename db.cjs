@@ -60,7 +60,7 @@ const User = sequelize.define("User", {
   credit: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 3,
+    defaultValue: 1,
   },
   serviceNo: {
     type: DataTypes.INTEGER,
